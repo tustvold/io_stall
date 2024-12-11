@@ -1,0 +1,15 @@
+[package]
+name = "io_stall"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+futures = "0.3"
+tokio = { version = "1.38.0", features = ["full"] }
+reqwest = { version = "0.12", features = ["stream"] }
+humantime = "2.1"
+clap = { version = "4.5.23", features = ["derive"] }
+
+[[bin]]
+name = "tokio"
+path = "src/tokio.rs"
