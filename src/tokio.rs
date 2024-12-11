@@ -72,7 +72,7 @@ async fn main() {
     let mut s = futures::stream::iter(std::iter::from_fn(|| {
         Some(do_work(client.clone(), args.cpu_duration, blocking_runtime))
     }))
-    .buffer_unordered(8);
+    .buffer_unordered(args.concurrency);
 
     let mut last_output = Instant::now();
     let mut buf = vec![];
