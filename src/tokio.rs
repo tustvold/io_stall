@@ -93,6 +93,4 @@ async fn main() {
             last_output = Instant::now();
         }
     }
-
-    tokio::signal::ctrl_c().await.unwrap();
 }
