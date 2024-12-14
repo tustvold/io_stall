@@ -68,9 +68,12 @@ async fn main() {
             .unwrap()
     });
 
-    let blocking_runtime = blocking_runtime.as_ref().map(|x| x.handle());
-    let mut s = futures::stream::iter(std::iter::from_fn(|| {
-        Some(do_work(client.clone(), args.cpu_duration, blocking_runtime))
+    let mut s = futures::stream::iter(std::iter::from_fn(move || {
+        let handle = blocking_runtime.as_ref().map(|x| x.handle().clone());
+        let client = client.clone();
+        Some(tokio::spawn(async move {
+            do_work(client.clone(), args.cpu_duration, handle.as_ref()).await
+        }))
     }))
     .buffer_unordered(args.concurrency);
 
@@ -80,8 +83,8 @@ async fn main() {
         buf.push(n);
         let elapsed = last_output.elapsed().as_secs_f32();
         if elapsed >= 1. {
-            let io: u128 = buf.iter().map(|(x, _)| x.as_millis()).sum();
-            let query: u128 = buf.iter().map(|(_, x)| x.as_millis()).sum();
+            let io: u128 = buf.iter().map(|x| x.as_ref().unwrap().0.as_millis()).sum();
+            let query: u128 = buf.iter().map(|x| x.as_ref().unwrap().1.as_millis()).sum();
             println!(
                 "Average duration of {} ms (IO {} ms) over {} samples, throughput {} rps",
                 query / buf.len() as u128,
